@@ -47,6 +47,8 @@ export class EmploiFormComponent implements OnInit {
     this.personneService.obtenirPersonneParId(this.personneId).subscribe({
       next: (data) => {
         this.personne = data;
+        console.log('Personne chargée:', this.personne);
+        console.log('Emplois actuels:', this.personne.emploisActuels?.length || 0);
       },
       error: () => {
         this.messageErreur = "Personne introuvable";
@@ -68,12 +70,23 @@ export class EmploiFormComponent implements OnInit {
     // Vérifier si la date de fin est vide (emploi actuel)
     if (emploi.dateFin === '') {
       emploi.dateFin = null;
+      console.log('Emploi actuel: date de fin est null');
     }
     
+    console.log('Envoi de l\'emploi au serveur:', emploi);
+    
     this.emploiService.ajouterEmploi(emploi, this.personneId).subscribe({
-      next: () => {
+      next: (resultat) => {
+        console.log('Emploi ajouté avec succès:', resultat);
         this.soumissionEnCours = false;
         this.messageSucces = 'Emploi ajouté avec succès!';
+        
+        // Recharger les données de la personne pour mettre à jour les emplois actuels
+        this.personneService.obtenirPersonneParId(this.personneId).subscribe(personneActualisee => {
+          console.log('Personne actualisée après ajout d\'emploi:', personneActualisee);
+          console.log('Emplois actuels après ajout:', personneActualisee.emploisActuels?.length || 0);
+        });
+        
         setTimeout(() => {
           this.router.navigate(['/personnes']);
         }, 1500);

@@ -19,6 +19,13 @@ export class EmploiService {
     return this.http.get<Emploi[]>(`${this.apiUrl}/personne/${personneId}`);
   }
 
+  obtenirEmploisParPersonneEtPeriode(personneId: number, dateDebut: string, dateFin: string): Observable<Emploi[]> {
+    return this.http.get<Emploi[]>(
+      `${this.apiUrl}/personne/${personneId}/periode`, 
+      { params: { dateDebut, dateFin } }
+    );
+  }
+
   obtenirEmploiParId(id: number): Observable<Emploi> {
     return this.http.get<Emploi>(`${this.apiUrl}/${id}`);
   }
