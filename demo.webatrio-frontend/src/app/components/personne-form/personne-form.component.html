@@ -1,0 +1,47 @@
+<div class="card">
+  <div class="card-header">
+    <h2>Ajouter une nouvelle personne</h2>
+  </div>
+  <div class="card-body">
+    <form [formGroup]="personneForm" (ngSubmit)="onSubmit()">
+      <div class="alert alert-danger" *ngIf="messageErreur">
+        {{ messageErreur }}
+      </div>
+      <div class="alert alert-success" *ngIf="messageSucces">
+        {{ messageSucces }}
+      </div>
+
+      <div class="mb-3">
+        <label for="prenom" class="form-label">Prénom</label>
+        <input type="text" class="form-control" id="prenom" formControlName="prenom" required>
+        <div class="text-danger" *ngIf="personneForm.get('prenom')?.invalid && (personneForm.get('prenom')?.dirty || personneForm.get('prenom')?.touched)">
+          Le prénom est obligatoire
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label for="nom" class="form-label">Nom</label>
+        <input type="text" class="form-control" id="nom" formControlName="nom" required>
+        <div class="text-danger" *ngIf="personneForm.get('nom')?.invalid && (personneForm.get('nom')?.dirty || personneForm.get('nom')?.touched)">
+          Le nom est obligatoire
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label for="dateNaissance" class="form-label">Date de naissance</label>
+        <input type="date" class="form-control" id="dateNaissance" formControlName="dateNaissance" required>
+        <div class="text-danger" *ngIf="personneForm.get('dateNaissance')?.invalid && (personneForm.get('dateNaissance')?.dirty || personneForm.get('dateNaissance')?.touched)">
+          La date de naissance est obligatoire
+        </div>
+        <div class="text-danger" *ngIf="personneForm.get('dateNaissance')?.valid && !validerDateNaissance()">
+          L'âge de la personne ne peut pas dépasser 150 ans
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary" [disabled]="personneForm.invalid || soumissionEnCours || !validerDateNaissance()">
+        <span *ngIf="soumissionEnCours" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+        Enregistrer
+      </button>
+    </form>
+  </div>
+</div> 

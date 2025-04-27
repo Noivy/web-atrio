@@ -1,0 +1,13 @@
+.card {
+  max-width: 600px;
+  margin: 0 auto;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.card-header {
+  background-color: #f8f9fa;
+}
+
+.form-label {
+  font-weight: 500;
+} 
