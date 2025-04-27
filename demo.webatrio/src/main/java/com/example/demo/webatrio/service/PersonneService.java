@@ -32,6 +32,25 @@ public class PersonneService {
     public Personne obtenirPersonneParId(Long id) {
         return personneRepository.findById(id).orElse(null);
     }
+    
+    public List<Personne> obtenirPersonnesParEntreprise(String nomEntreprise) {
+        if (nomEntreprise == null || nomEntreprise.trim().isEmpty()) {
+            throw new IllegalArgumentException("Le nom de l'entreprise ne peut pas être vide");
+        }
+        return personneRepository.findByNomEntreprise(nomEntreprise)
+                .stream()
+                .sorted(Comparator.comparing(Personne::getNom)
+                        .thenComparing(Personne::getPrenom))
+                .collect(Collectors.toList());
+    }
+    
+    public List<Personne> obtenirPersonnesAvecEmplois() {
+        return personneRepository.findAllWithJobs()
+                .stream()
+                .sorted(Comparator.comparing(Personne::getNom)
+                        .thenComparing(Personne::getPrenom))
+                .collect(Collectors.toList());
+    }
 
     public Personne enregistrerPersonne(Personne personne) {
         validerAge(personne);

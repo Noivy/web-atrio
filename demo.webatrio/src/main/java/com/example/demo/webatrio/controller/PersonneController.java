@@ -6,6 +6,13 @@ import com.example.demo.webatrio.modele.Emploi;
 import com.example.demo.webatrio.modele.Personne;
 import com.example.demo.webatrio.service.EmploiService;
 import com.example.demo.webatrio.service.PersonneService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +27,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/personnes")
 @CrossOrigin(origins = "http://localhost:4200")
+@Tag(name = "Personne", description = "API de gestion des personnes")
 public class PersonneController {
 
     private final PersonneService personneService;
@@ -32,6 +40,11 @@ public class PersonneController {
     }
 
     @GetMapping
+    @Operation(summary = "Obtenir toutes les personnes", description = "Récupère la liste de toutes les personnes enregistrées")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Liste des personnes récupérée avec succès", 
+                    content = { @Content(mediaType = "application/json", schema = @Schema(implementation = PersonneDTO.class)) }),
+    })
     public ResponseEntity<List<PersonneDTO>> obtenirToutesPersonnes() {
         List<Personne> personnes = personneService.obtenirToutesPersonnes();
         List<PersonneDTO> personneDTOs = personnes.stream()
@@ -40,8 +53,48 @@ public class PersonneController {
         return ResponseEntity.ok(personneDTOs);
     }
 
+    @GetMapping("/entreprise/{nomEntreprise}")
+    @Operation(summary = "Obtenir les personnes par entreprise", 
+            description = "Récupère les personnes qui travaillent ou ont travaillé pour l'entreprise spécifiée")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Liste des personnes récupérée avec succès"),
+            @ApiResponse(responseCode = "400", description = "Nom d'entreprise invalide ou vide")
+    })
+    public ResponseEntity<List<PersonneDTO>> obtenirPersonnesParEntreprise(
+            @Parameter(description = "Nom de l'entreprise à rechercher") 
+            @PathVariable String nomEntreprise) {
+        try {
+            List<Personne> personnes = personneService.obtenirPersonnesParEntreprise(nomEntreprise);
+            List<PersonneDTO> personneDTOs = personnes.stream()
+                    .map(this::convertirVersDTO)
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(personneDTOs);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @GetMapping("/avec-emplois")
+    @Operation(summary = "Obtenir les personnes avec emploi", 
+            description = "Récupère toutes les personnes qui ont au moins un emploi")
+    public ResponseEntity<List<PersonneDTO>> obtenirPersonnesAvecEmplois() {
+        List<Personne> personnes = personneService.obtenirPersonnesAvecEmplois();
+        List<PersonneDTO> personneDTOs = personnes.stream()
+                .map(this::convertirVersDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(personneDTOs);
+    }
+
     @GetMapping("/{id}")
-    public ResponseEntity<PersonneDTO> obtenirPersonneParId(@PathVariable Long id) {
+    @Operation(summary = "Obtenir une personne par ID", 
+            description = "Récupère les détails d'une personne spécifique par son ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Personne trouvée"),
+            @ApiResponse(responseCode = "404", description = "Personne non trouvée")
+    })
+    public ResponseEntity<PersonneDTO> obtenirPersonneParId(
+            @Parameter(description = "ID de la personne à rechercher") 
+            @PathVariable Long id) {
         Personne personne = personneService.obtenirPersonneParId(id);
         if (personne == null) {
             return ResponseEntity.notFound().build();
@@ -50,6 +103,12 @@ public class PersonneController {
     }
 
     @PostMapping
+    @Operation(summary = "Créer une personne", 
+            description = "Crée une nouvelle personne avec les données fournies")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Personne créée avec succès"),
+            @ApiResponse(responseCode = "400", description = "Données de personne invalides")
+    })
     public ResponseEntity<?> creerPersonne(@RequestBody PersonneDTO personneDTO) {
         try {
             Personne personne = convertirVersEntite(personneDTO);
@@ -61,7 +120,15 @@ public class PersonneController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> supprimerPersonne(@PathVariable Long id) {
+    @Operation(summary = "Supprimer une personne", 
+            description = "Supprime une personne existante par son ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Personne supprimée avec succès"),
+            @ApiResponse(responseCode = "404", description = "Personne non trouvée")
+    })
+    public ResponseEntity<Void> supprimerPersonne(
+            @Parameter(description = "ID de la personne à supprimer") 
+            @PathVariable Long id) {
         personneService.supprimerPersonne(id);
         return ResponseEntity.noContent().build();
     }
@@ -73,13 +140,8 @@ public class PersonneController {
             LocalDate dateNaissance = personne.getDateNaissance();
             LocalDate maintenant = LocalDate.now();
             age = Period.between(dateNaissance, maintenant).getYears();
-            System.out.println("Calcul de l'âge pour " + personne.getNom() + " " + personne.getPrenom() + ":");
-            System.out.println(" - Date de naissance: " + dateNaissance);
-            System.out.println(" - Date actuelle: " + maintenant);
-            System.out.println(" - Âge calculé: " + age);
         } else {
             age = 0;
-            System.out.println("Pas de calcul d'âge car la date de naissance est null pour " + personne.getNom() + " " + personne.getPrenom());
         }
         
         // Récupérer les emplois actuels (sans date de fin)
@@ -91,12 +153,6 @@ public class PersonneController {
                     .collect(Collectors.toList());
         }
         
-        // Log pour le débogage
-        System.out.println("Personne: " + personne.getNom() + " " + personne.getPrenom());
-        System.out.println("Age: " + age);
-        System.out.println("Nombre d'emplois actuels: " + emploisActuels.size());
-        emploisActuels.forEach(e -> System.out.println(" - " + e.getTitrePoste() + " chez " + e.getNomEntreprise()));
-        
         PersonneDTO dto = new PersonneDTO(
                 personne.getId(),
                 personne.getPrenom(),
@@ -105,8 +161,6 @@ public class PersonneController {
                 age,
                 emploisActuels
         );
-        
-        System.out.println("DTO créé avec âge: " + dto.getAge());
         
         return dto;
     }
