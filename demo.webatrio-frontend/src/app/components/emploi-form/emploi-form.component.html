@@ -1,0 +1,52 @@
+<div class="container mt-4">
+  <div class="card">
+    <div class="card-header">
+      <h2 *ngIf="personne">Ajouter un emploi pour {{ personne.prenom }} {{ personne.nom }}</h2>
+      <h2 *ngIf="!personne">Ajouter un emploi</h2>
+    </div>
+    <div class="card-body">
+      <div *ngIf="messageErreur" class="alert alert-danger">{{ messageErreur }}</div>
+      <div *ngIf="messageSucces" class="alert alert-success">{{ messageSucces }}</div>
+
+      <form [formGroup]="emploiForm" (ngSubmit)="onSubmit()">
+        <div class="mb-3">
+          <label for="nomEntreprise" class="form-label">Nom de l'entreprise</label>
+          <input type="text" class="form-control" id="nomEntreprise" formControlName="nomEntreprise" required>
+          <div class="text-danger" *ngIf="emploiForm.get('nomEntreprise')?.invalid && (emploiForm.get('nomEntreprise')?.dirty || emploiForm.get('nomEntreprise')?.touched)">
+            Le nom de l'entreprise est obligatoire
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="titrePoste" class="form-label">Titre du poste</label>
+          <input type="text" class="form-control" id="titrePoste" formControlName="titrePoste" required>
+          <div class="text-danger" *ngIf="emploiForm.get('titrePoste')?.invalid && (emploiForm.get('titrePoste')?.dirty || emploiForm.get('titrePoste')?.touched)">
+            Le titre du poste est obligatoire
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="dateDebut" class="form-label">Date de début</label>
+          <input type="date" class="form-control" id="dateDebut" formControlName="dateDebut" required [max]="dateAujourdhui">
+          <div class="text-danger" *ngIf="emploiForm.get('dateDebut')?.invalid && (emploiForm.get('dateDebut')?.dirty || emploiForm.get('dateDebut')?.touched)">
+            La date de début est obligatoire
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="dateFin" class="form-label">Date de fin <small class="text-muted">(Laisser vide pour un emploi actuel)</small></label>
+          <input type="date" class="form-control" id="dateFin" formControlName="dateFin" [min]="emploiForm.get('dateDebut')?.value" [max]="dateAujourdhui">
+          <small class="form-text text-muted">Si c'est l'emploi actuel, ne pas renseigner la date de fin</small>
+        </div>
+
+        <div class="d-flex">
+          <button type="submit" class="btn btn-primary" [disabled]="emploiForm.invalid || soumissionEnCours">
+            <span *ngIf="soumissionEnCours" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+            Enregistrer
+          </button>
+          <button type="button" class="btn btn-secondary ms-2" routerLink="/personnes">Annuler</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div> 

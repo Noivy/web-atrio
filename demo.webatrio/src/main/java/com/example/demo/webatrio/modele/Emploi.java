@@ -11,6 +11,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+
 @Entity
 @Table(name = "emplois")
 @Data
@@ -25,6 +27,10 @@ public class Emploi {
     private String nomEntreprise;
     
     private String titrePoste;
+    
+    private LocalDate dateDebut;
+    
+    private LocalDate dateFin;
     
     @ManyToOne
     @JoinColumn(name = "personne_id")

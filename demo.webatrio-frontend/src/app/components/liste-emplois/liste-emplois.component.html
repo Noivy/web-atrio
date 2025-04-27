@@ -1,0 +1,45 @@
+<div>
+  <h4 class="mt-3 mb-3">Emplois</h4>
+  
+  <div *ngIf="chargementEnCours" class="text-center">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Chargement...</span>
+    </div>
+  </div>
+  
+  <div *ngIf="!chargementEnCours && emplois.length === 0" class="alert alert-info">
+    Aucun emploi enregistré pour cette personne.
+  </div>
+  
+  <div *ngIf="!chargementEnCours && emplois.length > 0" class="table-responsive">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Entreprise</th>
+          <th>Poste</th>
+          <th>Date de début</th>
+          <th>Date de fin</th>
+          <th>Statut</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let emploi of emplois">
+          <td>{{ emploi.nomEntreprise }}</td>
+          <td>{{ emploi.titrePoste }}</td>
+          <td>{{ emploi.dateDebut | date:'dd/MM/yyyy' }}</td>
+          <td>{{ emploi.dateFin ? (emploi.dateFin | date:'dd/MM/yyyy') : '-' }}</td>
+          <td>
+            <span *ngIf="possedeEmploiActuel(emploi)" class="badge bg-success">Actuel</span>
+            <span *ngIf="!possedeEmploiActuel(emploi)" class="badge bg-secondary">Passé</span>
+          </td>
+          <td>
+            <button class="btn btn-danger btn-sm" (click)="supprimerEmploi(emploi.id || 0)">
+              Supprimer
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div> 
