@@ -35,4 +35,8 @@ public class Emploi {
     @ManyToOne
     @JoinColumn(name = "personne_id")
     private Personne personne;
+    
+    public boolean estEmploiActuel() {
+        return this.dateFin == null;
+    }
 } 

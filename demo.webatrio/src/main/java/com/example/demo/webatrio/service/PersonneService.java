@@ -7,7 +7,9 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.Period;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class PersonneService {
@@ -20,7 +22,11 @@ public class PersonneService {
     }
 
     public List<Personne> obtenirToutesPersonnes() {
-        return personneRepository.findAll();
+        return personneRepository.findAll()
+                .stream()
+                .sorted(Comparator.comparing(Personne::getNom)
+                        .thenComparing(Personne::getPrenom))
+                .collect(Collectors.toList());
     }
 
     public Personne obtenirPersonneParId(Long id) {
@@ -44,5 +50,12 @@ public class PersonneService {
                 throw new IllegalArgumentException("L'âge de la personne ne peut pas dépasser 150 ans");
             }
         }
+    }
+    
+    public int calculerAge(LocalDate dateNaissance) {
+        if (dateNaissance == null) {
+            return 0;
+        }
+        return Period.between(dateNaissance, LocalDate.now()).getYears();
     }
 } 
